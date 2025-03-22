@@ -69,3 +69,8 @@ process.on('unhandledRejection', (err) => {
     console.error("🚨 Unhandled Promise Rejection:", err.message);
     process.exit(1);
 });
+
+app.use((err, req, res, next) => {
+    console.error("Unhandled Error:", err);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+});

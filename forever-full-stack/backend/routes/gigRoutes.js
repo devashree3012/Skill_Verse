@@ -8,10 +8,6 @@ const router = express.Router();
 // 📌 1️⃣ **Create a Gig (Client)**
 router.post('/add', authenticateToken, async (req, res) => {
     try {
-        console.log("Received request at /add");
-        console.log("Received Data:", req.body);
-        console.log("req.user.id Type:", typeof req.user.id, req.user.id); // <-- Add this line
-
         const { title, description, skillsRequired, stipend, registrationDeadline, courseDuration } = req.body;
 
         if (!title || !description || !skillsRequired || !stipend || !registrationDeadline || !courseDuration) {
@@ -21,36 +17,51 @@ router.post('/add', authenticateToken, async (req, res) => {
         const newGig = new Gig({
             title,
             description,
-            skillsRequired: Array.isArray(skillsRequired) ? skillsRequired : skillsRequired.split(',').map(skill => skill.trim()), // Ensure it's always an array
+            skillsRequired: Array.isArray(skillsRequired) ? skillsRequired : skillsRequired.split(',').map(skill => skill.trim()),
             stipend,
             registrationDeadline,
             courseDuration,
-            clientId: new mongoose.Types.ObjectId(req.user.id), // Ensure ObjectId format
+            clientId: new mongoose.Types.ObjectId(req.user.id),
         });
-        
 
         await newGig.save();
         res.status(201).json({ success: true, message: "Gig created successfully", gig: newGig });
 
     } catch (error) {
-        console.error("🔥 Server Error in /add route:", error); // More detailed logging
+        console.error("🔥 Server Error in /add route:", error);
         res.status(500).json({ success: false, message: "Server Error", error: error.message });
     }
 });
 
-
+// 📌 2️⃣ **Get All Gigs**
 router.get('/list', async (req, res) => {
     try {
-      const gigs = await Gig.find(); // 🔥 Ensure this fetches ALL gigs
-      res.json({ success: true, gigs });
+        const gigs = await Gig.find();
+        res.json({ success: true, gigs });
     } catch (err) {
-      console.error(err);
-      res.status(500).json({ success: false, message: 'Server error' });
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Server error' });
     }
-  });
-  
+});
 
-// 📌 3️⃣ **Apply for a Gig (Student)**
+// 📌 3️⃣ **Get Single Gig**
+router.get('/:gigId', async (req, res) => {
+    try {
+        const { gigId } = req.params;
+        if (!mongoose.Types.ObjectId.isValid(gigId)) {
+            return res.status(400).json({ success: false, message: "Invalid Gig ID" });
+        }
+
+        const gig = await Gig.findById(gigId);
+        if (!gig) return res.status(404).json({ success: false, message: "Gig not found" });
+
+        res.json({ success: true, gig });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Server Error", error: error.message });
+    }
+});
+
+// 📌 4️⃣ **Apply for a Gig (Student)**
 router.post('/apply/:gigId', authenticateToken, async (req, res) => {
     try {
         const { gigId } = req.params;
@@ -75,7 +86,7 @@ router.post('/apply/:gigId', authenticateToken, async (req, res) => {
     }
 });
 
-// 📌 4️⃣ **Approve/Reject Student for a Gig (Client)**
+// 📌 5️⃣ **Approve/Reject Student for a Gig (Client)**
 router.post('/update-status/:gigId', authenticateToken, async (req, res) => {
     try {
         const { gigId } = req.params;
@@ -105,7 +116,7 @@ router.post('/update-status/:gigId', authenticateToken, async (req, res) => {
     }
 });
 
-// 📌 5️⃣ **Mark Gig as Completed (Client)**
+// 📌 6️⃣ **Mark Gig as Completed (Client)**
 router.post('/complete/:gigId', authenticateToken, async (req, res) => {
     try {
         const { gigId } = req.params;

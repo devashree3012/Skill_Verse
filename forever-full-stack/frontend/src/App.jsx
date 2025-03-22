@@ -15,6 +15,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Verify from './pages/Verify';
 import GigList from "./components/GigList";  // ✅ Import GigList Page
+import GigDetails from "./components/GigDetails";  // ✅ Import GigDetails Page
 
 const App = () => {
   return (
@@ -33,6 +34,7 @@ const App = () => {
         <Route path='/orders' element={<Orders />} />
         <Route path='/verify' element={<Verify />} />
         <Route path='/gigs' element={<GigList />} />  {/* ✅ Added Route for Gigs */}
+        <Route path='/gigs/:id' element={<GigDetails />} />  {/* ✅ Added Route for Gig Details */}
       </Routes>
       <Footer />
     </div>
